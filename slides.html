@@ -27,7 +27,7 @@
     <section class='full-background metro slide'>
       <div class='spacer top'></div>
       <div class='content'>
-        <h1>5 minutes intro to ØMQ</h1>
+        <h1>5 minutes intro to  ØMQ</h1>
       </div>
       <div class='spacer bottom'></div>
     </section>
@@ -161,11 +161,23 @@
     <section class='left slide'>
       <div class='spacer top'></div>
       <div class='content'>
+        <h1>Tradeoffs</h1>
+        
+        <ul>
+        <li>very high abstraction level - might be good or bad</li>
+        <li>strict on input - sockets are not exposable to say, the web</li>
+        </ul>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
         <h1>ØMQ in finc</h1>
         
         <ul>
         <li>used in a peripheral part</li>
-        <li>used for optimized batched, MUX-ish Libero requests</li>
+        <li>used for optimized batched Libero requests</li>
         <li>helps us to retrieve Libero data fast without overloading Libero</li>
         </ul>
       </div>

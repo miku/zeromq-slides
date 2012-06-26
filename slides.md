@@ -2,7 +2,7 @@
 
 !SLIDE
 
-# 5 minutes intro to ØMQ
+# 5 minutes intro to  ØMQ
 
 }}} images/metro.jpg
 
@@ -108,13 +108,20 @@ for i in range(10):
 
 * deals with multiple hops
 
+!SLIDE left
+
+# Tradeoffs
+
+* very high abstraction level - might be good or bad
+* strict on input - sockets are not exposable to say, the web
+
 
 !SLIDE left
 
 # ØMQ in finc
 
 * used in a peripheral part
-* used for optimized batched, MUX-ish Libero requests
+* used for optimized batched Libero requests
 * helps us to retrieve Libero data fast without overloading Libero
 
 !SLIDE left
