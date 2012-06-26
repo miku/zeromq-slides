@@ -1,184 +1,132 @@
-# elasticsearch-slides
+# zeromq-slides
 
 !SLIDE
 
-# 5 minutes intro to Elasticsearch
+# 5 minutes intro to ØMQ
 
-}}} images/tree.jpg
+}}} images/metro.jpg
 
-!SLIDE left
-
-# Elasticsearch <span style="color:gray">is a</span>
-
-* multitenant,
-* real-time,
-* distributed
-
-index engine based on **Lucene**, that
-
-* adapts to your domain model (not the other way around)
-* is easy to setup and
-* is fully configurable through an HTTP API
 
 !SLIDE left
 
-# Elasticsearch
+# The problem
 
-* <span style="color:gray">was started</span> by the author of Compass, Shay Banon
-* <span style="color:gray">is written</span> in Java
-* <span style="color:gray">is actively developed</span> @[github.com/elasticsearch/elasticsearch](https://github.com/elasticsearch/elasticsearch)
-    * 0.5 (2 years ago)
-    * 0.17 (11 month ago)
-    * 0.18 (8 month ago)
-    * 0.19 (4 month ago)
-    * 0.19.4 (1 month ago)
+* system components need to communicate ...
+* ... fast
+* ... accross threads, processes, machines
 
 !SLIDE left
 
-# Multitenancy
+# Solutions
 
-* have as many indexes as you want
-* graylog uses one index per day
-* finc uses one index per data source
+* APIs
+* SOAP (Simple Object Access Protocol)
+* REST (REpresentational State Transfer)
+* message-passing (MPI)
+* persistent broker middleware
+* ...
 
-``` sh
-$ curl -XPUT    localhost:9200/sample_index # create index
-$ curl -XPUT    localhost:9200/throwaway    # create another index
-$ curl -XDELETE localhost:9200/throwaway    # destroy index
+!SLIDE left
+
+# ØMQ background
+
+* written by AMQP (Advanced Message Queuing Protocol) authors from iMatis
+* AMQP was a successful, but complex product for **enterprise messaging**
+* ØMQ was a rewrite
+
+!SLIDE left
+
+# Zero-broker architecture
+
+* no message broker, just a library
+* modelled after **sockets**, but more versatile
+
+!SLIDE left
+ 
+# Create **simple endpoints**, then build topologies with **patterns**
+
+}}} images/simple.jpg
+
+!SLIDE left
+
+# 4 Patterns
+
+* Request/Reply (Client/Server model)
+* Push/Pull (Ventilator, Parallel Pipeline)
+* Publish/Subscribe 
+* Router/Dealer (Matryoshka envelopes)
+
+!SLIDE left
+
+# Client/Server
+
+Server & Client (17 SLOC)
+
+``` python
+import zmq
+context = zmq.Context()
+socket = context.socket(zmq.REP)
+socket.bind("tcp://*:5000") # listens on all interfaces
+ 
+while True:
+    msg = socket.recv()
+    socket.send(msg)
 ```
 
-* search over one or more indexes
-
-``` sh
-$ curl -XGET    localhost:9200/idx1,idx2/_search?q=Leipzig # search for Leipzig in idx1 and idx2
-```
-!SLIDE left
-
-# Real-time / `refresh_interval` at 1s by default
-
-}}} images/rt.jpg
-
-!SLIDE left
-
-# Distributed
-
-* start with one node, add more on the go
-* control the number of replicas
-
-``` sh
-$ curl -XPUT localhost:9200/sample_index/_settings -d '{ "index" : { "number_of_replicas" : 2 }}'
-```
-
-* automatic load balancing (index, search)
-
-!SLIDE left
-
-# Adapts to your domain
-
-}}} images/domain.png
-
-!SLIDE left
-
-# Adapts to your domain
-
-* json documents
-* dynamic mapping (without overhead)
-* mapping templates
-
-!SLIDE left
-
-# Easy to setup
-
-* you'll need a Java Virtual Machine
-* then
-
-``` shell
-$ wget https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.zip
-$ unzip elasticsearch-0.19.4.zip
-$ cd elasticsearch-0.19.4
-$ bin/elasticsearch -f
-[16:25:21,766][INFO ][node      ] [Dracula] {0.19.4}[4028]: initializing ...
-[16:25:21,775][INFO ][plugins   ] [Dracula] loaded [], sites []
-[16:25:24,015][INFO ][node      ] [Dracula] {0.19.4}[4028]: initialized
-[16:25:24,015][INFO ][node      ] [Dracula] {0.19.4}[4028]: starting ...   
-...
-[16:25:27,324][INFO ][gateway   ] [Dracula] recovered [0] indices into cluster_state
-```
-
-!SLIDE left
-
-# Easy to setup
-
-* index a doc
-
-``` shell
-$ curl -XPUT 'http://localhost:9200/twitter/tweet/1' -d '{
-    "user" : "kimchy",
-    "post_date" : "2009-11-15T14:12:12",
-    "message" : "trying out Elastic Search"
-}'
-```
-
-* search a doc
-
-``` shell
-$ curl -XGET 'http://localhost:9200/twitter/tweet/_search?q=user:kimchy'
+``` python
+import zmq
+context = zmq.Context()
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://127.0.0.1:5000")
+ 
+for i in range(10):
+    msg = "msg %s" % i
+    socket.send(msg)
+    msg_in = socket.recv()
 ```
 
 
 !SLIDE left
 
-# Configuration via HTTP API
+# Push/Pull
 
-* important settings:
-    * `index.number_of_replicas`
-    * `index.refresh_interval`
-    * `index.blocks.read_only`
+* load balancer/ventilator/pipeline
 
-* and a lot more (Lucene settings)
-
-!SLIDE left
-
-# Tradeoffs
-
-* no autowarming (see: [https://github.com/elasticsearch/elasticsearch/issues/1006](https://github.com/elasticsearch/elasticsearch/issues/1006))
-* while active, the community is much smaller than SOLR's
-* versioned documents would be nice, but it's not builtin (as we discovered)
-
-!SLIDE left
-
-# What others say
-
-* Solr may be the weapon of choice when building standard search applications, but Elasticsearch takes it to the next level with an architecture for creating modern realtime search applications. 
-
-* Percolation is an exciting and innovative feature that singlehandedly blows Solr right out of the water. Elasticsearch is scalable, speedy and a dream to integrate with. (Ryan Sonnek, socialcast)
-
-* more: [http://stackoverflow.com/questions/10213009/solr-vs-elasticsearch](http://stackoverflow.com/questions/10213009/solr-vs-elasticsearch), [http://www.quora.com/What-are-the-main-differences-between-ElasticSearch-Apache-Solr-and-SolrCloud](http://www.quora.com/What-are-the-main-differences-between-ElasticSearch-Apache-Solr-and-SolrCloud)
-
-!SLIDE left
-
-# Percolation?
-
-}}} images/percolation.jpg
-
-!SLIDE left
-
-# Percolation
-
-* Think of it as the reverse operation of indexing and then searching 
-* Instead of sending docs, indexing them, and then running queries
-* One sends queries, registers them, and then sends docs and finds out which queries match that doc
+![images/pushpull.png](images/pushpull.png)
 
 
 !SLIDE left
 
-# Wrap up
+# Publish/Subscribe
 
-* more features not covered:
-    * search / query language
-    * facets
-    * scrolls
+* in contrast to Push/Pull a Publisher sends to all subscribers in parallel (no round-robin)
+* subscription to certain messages possible
 
-* language bindings:
-    * Elasticsearch.pm, PHP, Ruby, Python, Java (native), .NET, Clojure, Erlang
+!SLIDE left
 
+# Router/Dealer
+
+* deals with multiple hops
+
+
+!SLIDE left
+
+# ØMQ in finc
+
+* used in a peripheral part
+* used for optimized batched, MUX-ish Libero requests
+* helps us to retrieve Libero data fast without overloading Libero
+
+!SLIDE left
+
+# ØMQ helps to *think* about distributed system
+
+}}} images/dist.jpg
+
+!SLIDE left
+
+# Credits
+
+* http://www.flickr.com/photos/leoprieto/2487947/
+* http://www.flickr.com/photos/ndantas/6807489524/
+* http://www.flickr.com/photos/jeeheon/5013458497

@@ -104,14 +104,12 @@ body {
       -moz-box-pack: start;
       -ms-box-pack: start;
       box-pack: start; }
-      .keydown.deck-container .slide.full-background.tree {
-        background-image: url(../images/tree.jpg); }
-      .keydown.deck-container .slide.full-background.rt {
-        background-image: url(../images/rt.jpg); }
-      .keydown.deck-container .slide.full-background.domain {
-        background-image: url(../images/domain.png); }
-      .keydown.deck-container .slide.full-background.percolation {
-        background-image: url(../images/percolation.jpg); }
+      .keydown.deck-container .slide.full-background.metro {
+        background-image: url(../images/metro.jpg); }
+      .keydown.deck-container .slide.full-background.simple {
+        background-image: url(../images/simple.jpg); }
+      .keydown.deck-container .slide.full-background.dist {
+        background-image: url(../images/dist.jpg); }
       .keydown.deck-container .slide.full-background h1 {
         display: inline;
         position: absolute;
